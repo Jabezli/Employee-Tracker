@@ -1,13 +1,14 @@
 const { table } = require("console");
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
+require("dotenv").config();
 
 const db = mysql.createConnection(
   {
     host: "localhost",
-    user: "root",
-    password: "dawanzi",
-    database: "personnel_db",
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
   },
   console.log("Connected to the personnel_db database.")
 );
@@ -96,11 +97,15 @@ const viewAllEmployees = () => {
 };
 
 const addDepartment = () => {
-  inquirer.prompt([
-    {
-      type: "input",
-      name: "name",
-      message: "What is the name of the department?",
-    },
-  ]);
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "name",
+        message: "What is the name of the department?",
+      },
+    ])
+    .then((answer) => {
+      db.query("INSERT INTO departments (department_name) VALUES (?)");
+    });
 };

@@ -24,6 +24,9 @@ CREATE TABLE employee_data (
     last_name VARCHAR(100) NOT NULL,
     role_id INT,
     FOREIGN KEY (role_id) REFERENCES roles(id)
+    ON DELETE SET NULL,
+    manager_id INT,
+    FOREIGN KEY (manager_id) REFERENCES employee_data(id)
     ON DELETE SET NULL
 )
 
