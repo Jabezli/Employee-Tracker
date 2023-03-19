@@ -6,19 +6,9 @@ const employeeQuery = new EmployeeQuery();
 const mysql = require("mysql2");
 require("dotenv").config();
 
-// const db = mysql.createConnection(
-//   {
-//     host: "localhost",
-//     user: process.env.DB_USER,
-//     password: process.env.DB_PASSWORD,
-//     database: process.env.DB_NAME,
-//   },
-//   console.log("Connected to the personnel_db database.")
-// );
-
 const init = () => {
   console.log(
-    "Caution: This personnel database contains sensitive and confidential information. Access is restricted to authorized personnel only."
+    `Caution: This personnel database contains sensitive and confidential information. Access is restricted to authorized personnel only.\n`
   );
   inquirer
     .prompt([
@@ -42,36 +32,43 @@ const init = () => {
     ])
     .then(async function (answer) {
       // Call the appropriate function based on the user's choice
+      // to ensure the await works, all methods from employeeQuery must return a promise. Otherwise, it won't wait for the methods to complete but instead directly jump to isMore()
       try {
+        console.log("\n");
         switch (answer.action) {
           case "View all departments":
-            console.log("\n");
             await employeeQuery.viewAllDepartments();
-            isMore();
             break;
+
           case "View all roles":
-            employeeQuery.viewAllRoles();
+            await employeeQuery.viewAllRoles();
             break;
+
           case "View all employees":
-            employeeQuery.viewAllEmployees();
+            await employeeQuery.viewAllEmployees();
             break;
+
           case "Add a department":
-            employeeQuery.addDepartment();
+            await employeeQuery.addDepartment();
             break;
+
           case "Add a role":
-            employeeQuery.addRole();
+            await employeeQuery.addRole();
             break;
+
           case "Add an employee":
-            employeeQuery.addEmployee();
+            await employeeQuery.addEmployee();
             break;
+
           case "Update an employee role":
-            employeeQuery.updateEmployeeRole();
+            await employeeQuery.updateEmployeeRole();
             break;
+
           default:
-            console.log("\n");
             console.log("Terminating App. Goodbye");
             process.exit(0);
         }
+        isMore();
       } catch (err) {
         console.error(err);
       }
