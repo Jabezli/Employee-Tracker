@@ -37,15 +37,18 @@ const init = () => {
         console.log("\n");
         switch (answer.action) {
           case "View all departments":
-            await employeeQuery.viewAllDepartments();
+            const departments = await employeeQuery.viewAllDepartments();
+            console.table(departments);
             break;
 
           case "View all roles":
-            await employeeQuery.viewAllRoles();
+            const roles = await employeeQuery.viewAllRoles();
+            console.table(roles);
             break;
 
           case "View all employees":
-            await employeeQuery.viewAllEmployees();
+            const employees = await employeeQuery.viewAllEmployees();
+            console.table(employees);
             break;
 
           case "Add a department":
@@ -53,7 +56,7 @@ const init = () => {
             break;
 
           case "Add a role":
-            await employeeQuery.addRole();
+            await addRoleQuestion();
             break;
 
           case "Add an employee":
@@ -94,6 +97,40 @@ const isMore = () => {
         process.exit(0);
       }
     });
+};
+
+const addRoleQuestion = async () => {
+  try {
+    const departmentOb = await employeeQuery.viewAllDepartments();
+    const departmentName = await departmentOb.map((el) => el.department_name);
+    await inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "job_title",
+          message: "What is the job_title of the role?",
+        },
+        {
+          type: "input",
+          name: "salary",
+          message: "What is the salary of the role?",
+        },
+        {
+          type: "list",
+          name: "department_name",
+          message: "which department does this role belong to?",
+          choices: departmentName,
+        },
+      ])
+      .then((answer) => {
+        employeeQuery.addRole(answer);
+        console.log(
+          `\n New role [${answer.job_title}] has been added successfully`
+        );
+      });
+  } catch (err) {
+    console.error(err);
+  }
 };
 
 init();
