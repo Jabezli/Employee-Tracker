@@ -60,7 +60,7 @@ const init = () => {
             break;
 
           case "Add an employee":
-            await employeeQuery.addEmployee();
+            await addEmployeeQustion();
             break;
 
           case "Update an employee role":
@@ -127,6 +127,61 @@ const addRoleQuestion = async () => {
         console.log(
           `\n New role [${answer.job_title}] has been added successfully`
         );
+      });
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const addEmployeeQustion = async () => {
+  try {
+    //seems like I don't really need to list the deparments here becasue by listing roles, I should get the corresponding departments when select roles.
+    // const departmentOb = await employeeQuery.viewAllDepartments();
+    // const departmentName = await departmentOb.map((el) => el.department_name);
+    // console.log(departmentName);
+    const roleOb = await employeeQuery.viewAllRoles();
+    const roleName = await roleOb.map((el) => el.job_title);
+    const employeeOb = await employeeQuery.viewAllEmployees();
+    // employeeOb will use the viewAllEmployee method to return an array with objects for all employees.
+    // I want to see all the managers but not all the employees are managers. Instead of creating a new method to viewAllManager
+    // I first map out all the employees that are managers then using filter to remove nulls.
+    // the if statement will each value of the array to see if it doesn't equal to null. If doesn't equal, the name is a manager and will be returned to the new array.
+    // At the end of the map, I added the filter function and use Boolean function as the argument. Basically, it removes all the falsy, in here, the nulls.
+
+    const managerList = await employeeOb
+      .map((el) => {
+        if (el.manager_name !== null) {
+          return el.manager_name;
+        }
+      })
+      .filter(Boolean);
+    await inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "first_name",
+          message: "What is the first name of the employee?",
+        },
+        {
+          type: "input",
+          name: "last_name",
+          message: "What is the last name of the employee?",
+        },
+        {
+          type: "list",
+          name: "job_title",
+          message: "What is the job_title of the role?",
+          choices: roleName,
+        },
+        {
+          type: "list",
+          name: "manager_name",
+          message: "What is the job_title of the role?",
+          choices: managerList,
+        },
+      ])
+      .then((answer) => {
+        employeeQuery.addEmployee(answer);
       });
   } catch (err) {
     console.error(err);
