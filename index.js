@@ -64,7 +64,7 @@ const init = () => {
             break;
 
           case "Update an employee role":
-            await employeeQuery.updateEmployeeRole();
+            await updateRoleQuestion();
             break;
 
           default:
@@ -135,10 +135,6 @@ const addRoleQuestion = async () => {
 
 const addEmployeeQustion = async () => {
   try {
-    //seems like I don't really need to list the deparments here becasue by listing roles, I should get the corresponding departments when select roles.
-    // const departmentOb = await employeeQuery.viewAllDepartments();
-    // const departmentName = await departmentOb.map((el) => el.department_name);
-    // console.log(departmentName);
     const roleOb = await employeeQuery.viewAllRoles();
     const roleName = await roleOb.map((el) => el.job_title);
     const employeeOb = await employeeQuery.viewAllEmployees();
@@ -176,7 +172,7 @@ const addEmployeeQustion = async () => {
         {
           type: "list",
           name: "manager_name",
-          message: "What is the job_title of the role?",
+          message: "who is the manager of this employee?",
           choices: managerList,
         },
       ])
@@ -187,5 +183,44 @@ const addEmployeeQustion = async () => {
     console.error(err);
   }
 };
+// need to update first last name and role
+const updateRoleQuestion = async () => {
+  try {
+    const employee = await employeeQuery.viewAllEmployees();
+    const employeeName = await employee.map((employee) => ({
+      fullName: employee.first_name + " " + employee.last_name,
+      value: employee.id,
+    }));
+    const roles = await employeeQuery.viewAllRoles();
+    const roleList = roles.map((role) => role.job_title);
 
+    console.log(employeeName);
+    await inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "employee_name",
+          message: "Which employee's rode do you want to update?",
+          choices: employeeName.map((employee) => employee.fullName),
+        },
+        {
+          type: "list",
+          name: "job_title",
+          message: "Which role do you want to assign to the selected employee?",
+          choices: roleList,
+        },
+      ])
+      .then((answer) => {
+        // in the choices of first prompt, I mapped out the employees' full names from employeeName, which also has corresponding id.
+        // using find method to loop out the id of the selected employee. The ".value" is the key of the employee.id.
+        const selectedEmployeeId = employeeName.find(
+          (employee) => employee.fullName === answer.employee_name
+        ).value;
+        console.log(selectedEmployeeId);
+        employeeQuery.updateRole(answer, selectedEmployeeId);
+      });
+  } catch (err) {
+    console.error(err);
+  }
+};
 init();
