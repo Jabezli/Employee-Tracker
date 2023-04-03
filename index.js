@@ -4,6 +4,7 @@ const fs = require("fs");
 const EmployeeQuery = require("./lib/personnelDatabase");
 const employeeQuery = new EmployeeQuery();
 const mysql = require("mysql2");
+const { log } = require("console");
 require("dotenv").config();
 
 const init = () => {
@@ -26,6 +27,7 @@ const init = () => {
           "Add a role",
           "Add an employee",
           "Update an employee role",
+          "View budget of a department",
           "Quit Application",
         ],
       },
@@ -65,6 +67,10 @@ const init = () => {
 
           case "Update an employee role":
             await updateRoleQuestion();
+            break;
+
+          case "View budget of a department":
+            await deptBdgtQuestion();
             break;
 
           default:
@@ -151,6 +157,9 @@ const addEmployeeQustion = async () => {
         }
       })
       .filter(Boolean);
+    //I noticed that the function managerList won't remove repeated manager names but just removes null.
+    // the "Set" method is to use the managerlist array to remove all repeated manager names then return to a new array.
+    const uniqueManagers = await [...new Set(managerList)];
     await inquirer
       .prompt([
         {
@@ -173,11 +182,14 @@ const addEmployeeQustion = async () => {
           type: "list",
           name: "manager_name",
           message: "who is the manager of this employee?",
-          choices: managerList,
+          choices: uniqueManagers,
         },
       ])
       .then((answer) => {
         employeeQuery.addEmployee(answer);
+        console.log(
+          `\n ${answer.first_name} ${answer.last_name} has been added to the database. Job title is ${answer.job_title}. Report to ${answer.manager_name}'s crew.`
+        );
       });
   } catch (err) {
     console.error(err);
@@ -216,11 +228,42 @@ const updateRoleQuestion = async () => {
         const selectedEmployeeId = employeeName.find(
           (employee) => employee.fullName === answer.employee_name
         ).value;
-        console.log(selectedEmployeeId);
         employeeQuery.updateRole(answer, selectedEmployeeId);
+        console.log(
+          `\n ${answer.employee_name}'s job title has been updated as ${answer.job_title}.`
+        );
       });
   } catch (err) {
     console.error(err);
   }
 };
+
+const deptBdgtQuestion = async () => {
+  try {
+    const departmentOb = await employeeQuery.viewAllDepartments();
+    const departmentName = await departmentOb.map((el) => el.department_name);
+    await inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "department_name",
+          message: "Which department's budget would you like to view?",
+          choices: departmentName,
+        },
+      ])
+      .then(async (answer) => {
+        console.log("\n");
+        // await employeeQuery.viewDeptBdgt(answer);
+        // console.log(`\n ${answer.Department} is ${answer.Budget}`);
+        const budget = await employeeQuery.viewDeptBdgt(answer);
+        // console.log(budget);
+        console.log(
+          `\n ${budget.Department} department's budget is ${budget.Budget}`
+        );
+      });
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 init();
