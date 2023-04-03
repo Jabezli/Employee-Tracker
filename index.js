@@ -26,7 +26,7 @@ const init = () => {
           "Add a department",
           "Add a role",
           "Add an employee",
-          "Update an employee role",
+          "Update an employee's role",
           "View budget of a department",
           "Quit Application",
         ],
@@ -65,7 +65,7 @@ const init = () => {
             await addEmployeeQustion();
             break;
 
-          case "Update an employee role":
+          case "Update an employee's role":
             await updateRoleQuestion();
             break;
 
@@ -131,7 +131,7 @@ const addRoleQuestion = async () => {
       .then((answer) => {
         employeeQuery.addRole(answer);
         console.log(
-          `\n New role [${answer.job_title}] has been added successfully`
+          `\n New role ${answer.job_title} has been added successfully`
         );
       });
   } catch (err) {
@@ -181,7 +181,7 @@ const addEmployeeQustion = async () => {
         {
           type: "list",
           name: "manager_name",
-          message: "who is the manager of this employee?",
+          message: "Who is the manager of this employee?",
           choices: uniqueManagers,
         },
       ])
@@ -205,14 +205,12 @@ const updateRoleQuestion = async () => {
     }));
     const roles = await employeeQuery.viewAllRoles();
     const roleList = roles.map((role) => role.job_title);
-
-    console.log(employeeName);
     await inquirer
       .prompt([
         {
           type: "list",
           name: "employee_name",
-          message: "Which employee's rode do you want to update?",
+          message: "Which employee's role do you want to update?",
           choices: employeeName.map((employee) => employee.fullName),
         },
         {
@@ -253,10 +251,7 @@ const deptBdgtQuestion = async () => {
       ])
       .then(async (answer) => {
         console.log("\n");
-        // await employeeQuery.viewDeptBdgt(answer);
-        // console.log(`\n ${answer.Department} is ${answer.Budget}`);
         const budget = await employeeQuery.viewDeptBdgt(answer);
-        // console.log(budget);
         console.log(
           `\n ${budget.Department} department's budget is ${budget.Budget}`
         );
